@@ -1,4 +1,4 @@
-// UI Kit resolver shared by the issue panel and the project page.
+// Backend resolver shared by the Custom UI issue panel, project page, and admin settings page.
 //
 // Every method returns an `{ error }` object on failure instead of throwing,
 // so the frontend can render the failure as an error state with a retry.
