@@ -10,13 +10,13 @@ screen. Keep the cursor slow and deliberate.
 
 ## Scene 1 — The problem (0:00–0:30)
 
-**Show:** Jira, ORB-42 open ("Checkout crashes on iOS 19 when applying promo
-codes"). Scroll to the linked issues: "is blocked by ORB-31".
+**Show:** Jira, ORB-2 open ("Checkout crashes on iOS 19 when applying promo
+codes"). Scroll to the linked issues: "is blocked by ORB-3".
 
 **Say:**
 
-> "This is ORB-42 — our checkout crashes on iOS 19, and the release is waiting
-> on it. Jira tells me it's blocked by ORB-31, a payments API bug in another
+> "This is ORB-2 — our checkout crashes on iOS 19, and the release is waiting
+> on it. Jira tells me it's blocked by ORB-3, a payments API bug in another
 > team. What Jira doesn't tell me is who can actually unblock it, or what I
 > should say to them. So blocked work just… sits there. Unjam answers both
 > questions."
@@ -31,35 +31,35 @@ codes"). Scroll to the linked issues: "is blocked by ORB-31".
 
 **Say:**
 
-> "One click, and Unjam traces the blocker chain — ORB-42 is blocked by
-> ORB-31, six days open, two issues waiting on it. And here is the answer:
-> ask Priya Nair."
+> "One click, and Unjam traces the blocker chain — ORB-2 is blocked by
+> ORB-3, open since today, two issues waiting on it. And here is the answer:
+> ask Andi Pangeran."
 
-**Show:** The top unblocker card — Priya's avatar, score badge, reasons.
+**Show:** The top unblocker card — Andi's avatar, score badge, reasons.
 Point at each reason as you name it.
 
 **Say:**
 
-> "Priya owns ORB-31. She's resolved similar payments issues before, and she
-> only has a few open items right now. The score isn't a guess — every point
-> comes with its reason, and if a data source can't be read, Unjam says so
+> "Andi owns ORB-3. He commented on the blocker today, and he only has
+> four open items right now. The score isn't a guess — every point comes
+> with its reason, and if a data source can't be read, Unjam says so
 > instead of pretending."
 
 **Show:** Scroll to the draft request.
 
 **Say:**
 
-> "Unjam already drafted the ask — a polite comment for Priya on ORB-31, with
-> the context she needs. One click sends it."
+> "Unjam already drafted the ask — a polite comment for Andi on ORB-3, with
+> the context he needs. One click sends it."
 
 **Show:** Click **Send request**. The success message appears; the tracking
-banner appears ("Request sent to Priya · SLA 48h · we'll follow up if there's
+banner appears ("Request sent to Andi · SLA 48h · we'll follow up if there's
 no reply").
 
 **Say:**
 
-> "Posted — as a real comment on ORB-31, mentioning Priya. And Unjam is now
-> tracking it. If ORB-31 is still open in 48 hours, a follow-up goes out
+> "Posted — as a real comment on ORB-3, mentioning Andi. And Unjam is now
+> tracking it. If ORB-3 is still open in 48 hours, a follow-up goes out
 > automatically."
 
 ---
@@ -72,17 +72,18 @@ no reply").
 
 > "Now the whole project. Every blocked issue in ORB, ranked by what the wait
 > actually costs — age, how many issues are waiting, deadline, priority.
-> ORB-42 is the most expensive row, and it's blocked by ORB-31 — the same
-> blocker holding up the release and the Apple Pay story. Fix ORB-31 first and
+> ORB-2 is the most expensive row, and it's blocked by ORB-3 — the same
+> blocker holding up the release and the Apple Pay story. Fix ORB-3 first and
 > three issues move."
 
-**Show:** Point at the ORB-38 row.
+**Show:** Point at the ORB-4 row.
 
 **Say:**
 
-> "And here's ORB-38, blocked by ORB-27 — a legal approval with no assignee at
-> all. Unjam still finds someone: the legal expert, not an owner that doesn't
-> exist."
+> "And here's ORB-4, also blocked by ORB-5 — a legal approval with no
+> assignee at all. With only one person on this demo site, Unjam honestly
+> shows no match here instead of inventing one — it never pretends to know
+> what it can't see."
 
 ---
 
@@ -94,7 +95,7 @@ no reply").
 
 > "Same engine, in plain language. I ask Unjam: who can unblock this issue?"
 
-**Show:** The agent's answer — Priya, score, reasons.
+**Show:** The agent's answer — Andi, score, reasons.
 
 **Say:**
 
@@ -104,7 +105,7 @@ no reply").
 
 **Say:**
 
-> "ORB-31 again — the agent weighs the cost the same way the board does. And
+> "ORB-3 again — the agent weighs the cost the same way the board does. And
 > now the draft."
 
 **Show:** Type: *"Draft an unblock request for me."* The agent shows the draft
@@ -125,7 +126,7 @@ tracking started.
 **Show:** A terminal or MCP client config with the endpoint
 `https://mcp.atlassian.com/forge/<appId>` (blur or replace the real app ID if
 you prefer), then a client calling the `find-unblockers` tool and getting
-Priya back. Alternatively, show Rovo Studio with the Unjam tools listed.
+Andi back. Alternatively, show Rovo Studio with the Unjam tools listed.
 
 **Say:**
 
@@ -133,7 +134,7 @@ Priya back. Alternatively, show Rovo Studio with the Unjam tools listed.
 > Studio, or an external client like Claude or Cursor, can ask Unjam the same
 > questions."
 
-**Show:** Back in Jira, the tracking banner on ORB-42 (or the project page
+**Show:** Back in Jira, the tracking banner on ORB-2 (or the project page
 flag on an escalated row, if one is available).
 
 **Say:**
@@ -163,11 +164,15 @@ link note (in the video description).
 
 ## Recording checklist
 
-- [ ] ORB demo data created per [DEMO_DATA.md](DEMO_DATA.md) (5 issues, 4 links).
-- [ ] Priya has commented once on ORB-31 and resolved one older payments bug
-      (so familiarity + expertise signals show live reasons).
+- [ ] ORB demo data live on the dev site (ORB-1..ORB-5, 4 links) — see
+      [DEMO_DATA.md](DEMO_DATA.md) for the mapping to the doc's original keys.
+- [ ] Andi has commented on ORB-3 (the test send), so the familiarity signal
+      shows a live reason ("Commented on this blocker today"). Note: no
+      expertise signal on this demo site — the script doesn't claim one.
 - [ ] Rovo agent installed and visible under Browse agents.
-- [ ] Send a request from ORB-42 during Scene 2 — do it live, not pre-recorded.
+- [ ] Send a request from ORB-2 during Scene 2 — do it live, not pre-recorded.
+      Use the PRODUCTION panel (the dev panel already sent one). Optionally
+      delete the earlier test comment on ORB-3 first for a clean recording.
 - [ ] Total runtime under 5:00 (target 4:30; trim pauses in Scene 4 if needed).
 - [ ] No real user data, no production site — dev site only.
 - [ ] Upload as a public YouTube video; put the installation link and the
