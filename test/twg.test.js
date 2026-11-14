@@ -22,7 +22,7 @@ function connection(nodes, hasNextPage, endCursor = null) {
 describe('ARI helpers and open-status check', () => {
   test('userAri and workItemAri build the documented ARI shapes', () => {
     expect(userAri('abc123')).toBe('ari:cloud:identity::user/abc123');
-    expect(workItemAri('cloud-1', '10042')).toBe('ari:cloud:jira/cloud-1:issue/10042');
+    expect(workItemAri('cloud-1', '10042')).toBe('ari:cloud:jira:cloud-1:issue/10042');
   });
 
   test('isOpenStatus treats done/closed/resolved as closed, case-insensitively', () => {
@@ -213,7 +213,7 @@ describe('TwgClient', () => {
       ], false),
     });
     const client = new TwgClient(queryFn);
-    const { items, notes } = await client.getCommenters('ari:cloud:jira/c1:issue/1001');
+    const { items, notes } = await client.getCommenters('ari:cloud:jira:c1:issue/1001');
     expect(notes).toEqual([]);
     expect(items).toEqual([
       { accountId: 'u-maya', displayName: 'Maya', count: 2, lastAt: '2026-11-12T10:00:00.000Z' },

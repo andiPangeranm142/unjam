@@ -55,7 +55,11 @@ export function userAri(accountId) {
 }
 
 export function workItemAri(cloudId, numericIssueId) {
-  return `ari:cloud:jira/${cloudId}:issue/${numericIssueId}`;
+  // NOTE: the cloud-id segment is COLON-separated (ari:cloud:jira:<cloudId>:
+  // issue/<id>), matching the app ARI shape ari:cloud:ecosystem::app/<uuid>.
+  // A slash after "jira" (ari:cloud:jira/<cloudId>:...) is rejected by the
+  // Teamwork Graph API as "Invalid ARI string" (found live 14 Nov 2026).
+  return `ari:cloud:jira:${cloudId}:issue/${numericIssueId}`;
 }
 
 // Open-status check for Teamwork Graph status names (CONCEPT.md section 2.1).

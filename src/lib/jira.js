@@ -171,13 +171,18 @@ export class JiraClient {
   }
 
   // How many open issues are blocked by the given blocker.
-  // NOTE (CONCEPT.md section 2.3): the linkedIssues JQL reads the link type
-  // from the found issue's point of view; this semantic assumption must be
-  // verified on the dev site. The main chain traversal does NOT depend on
-  // it (it uses issuelinks from REST instead).
+  // VERIFIED on the live dev site 14 Nov 2026 (on corrected demo data):
+  // linkedIssues reads the link description from the GIVEN issue's point of
+  // view, so "is blocked by" returns the issues BLOCKING key, while
+  // "blocks" returns the issues blocked BY key — the waiting ones.
+  // countWaitingOn("ORB-3") -> ORB-2, ORB-4 via "blocks"; "is blocked by"
+  // returned [] for ORB-3 and [ORB-3] for ORB-2. (An earlier note claiming
+  // the opposite was written against inverted demo links and was wrong.)
+  // The main chain traversal does NOT depend on it (it uses issuelinks
+  // from REST instead).
   async countWaitingOn(blockerKey) {
     const validKey = validateIssueKey(blockerKey);
-    const jql = `issue in linkedIssues("${validKey}", "is blocked by") AND statusCategory != Done`;
+    const jql = `issue in linkedIssues("${validKey}", "blocks") AND statusCategory != Done`;
     const { issues } = await this.searchJql(jql, { fields: 'key', maxResults: 50, maxPages: 1 });
     return issues.length;
   }

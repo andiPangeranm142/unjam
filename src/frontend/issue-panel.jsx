@@ -4,6 +4,11 @@
 // compact blocker chain, then the draft, then the tracking banner.
 // No Tabs — sections keep the panel scannable in the narrow issue view.
 // All data comes from the resolver; nothing here is hardcoded.
+// NOTE: Forge's build uses the classic JSX transform (React.createElement),
+// so the default React import is REQUIRED — without it the bundle
+// references an undefined free `React` and the panel never renders
+// (skeleton forever, no error in forge logs). Found 14 Nov 2026.
+import React from 'react';
 import ForgeReconcilerModule, {
   Badge,
   Box,

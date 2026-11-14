@@ -247,15 +247,18 @@ rate-limited payments API, and an unassigned legal approval. Full details
 
 Honest notes, because judges should know what is verified and what is not:
 
-- **JQL `linkedIssues` direction semantics.** The waiting-count query uses
-  `issue in linkedIssues("KEY", "is blocked by")`, read from the perspective of
-  the issue that *is blocked by* KEY. This assumption must be verified on the
-  dev site. The main chain traversal does **not** depend on it (it uses
-  `issuelinks` from the issue REST API), so a wrong direction only affects the
-  waiting count, not the chain or the ranking.
-- **`forge lint` was not run in this sandbox.** It requires a logged-in Forge
-  CLI. The local validator (`npm run validate`) replicates its main checks
-  instead; the real `forge lint` is run by the submitter after login.
+- **JQL `linkedIssues` direction semantics — VERIFIED 14 Nov 2026 on the live
+  dev site.** The waiting-count query uses
+  `issue in linkedIssues("KEY", "blocks")`: `linkedIssues` reads the link
+  description from the *given* issue's point of view, so `"blocks"` returns
+  the issues blocked *by* KEY (the ones waiting on it) — on the ORB demo
+  data, `countWaitingOn("ORB-3")` correctly returns ORB-2 and ORB-4 — while
+  `"is blocked by"` would return the issues blocking KEY instead. The main
+  chain traversal does **not** depend on it (it uses `issuelinks` from the
+  issue REST API).
+- **`forge lint` passes clean.** Run 14 Nov 2026 after login: "No issues
+  found." (The local validator, `npm run validate`, replicates the main checks
+  for offline use.)
 - **SLA is fixed at 48 hours in v1.** There is no admin page to change it yet;
   configurable SLA is future work.
 - **Scheduled trigger timing is per-installation.** The daily watch starts
