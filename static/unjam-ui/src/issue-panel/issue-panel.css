@@ -1,0 +1,39 @@
+/* Issue panel component-scoped styles. Shared classes live in
+   ../shared/tokens.css; only panel-specific bits go here. */
+
+/* Smooth expand/collapse (grid-rows trick — animates to content height). */
+.uj-expand {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 240ms var(--uj-ease);
+}
+
+.uj-expand--open {
+  grid-template-rows: 1fr;
+}
+
+.uj-expand__inner {
+  overflow: hidden;
+  min-height: 0;
+}
+
+/* Score / cost breakdown mini-bars. */
+.uj-breakdown {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 8px;
+}
+
+.uj-mini-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* Draft text keeps its line breaks. */
+.uj-draft-text {
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
