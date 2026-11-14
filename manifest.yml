@@ -1,0 +1,221 @@
+# Unjam — Unblock Assistant for Jira (Codegeist 2026)
+#
+# Manifest verified against the official Forge manifest reference:
+#   - rovo:agent  https://developer.atlassian.com/platform/forge/manifest-reference/modules/rovo-agent/
+#   - rovo:skill  https://developer.atlassian.com/platform/forge/manifest-reference/modules/rovo-skill/
+#   - rovo:mcp    https://developer.atlassian.com/platform/forge/manifest-reference/modules/rovo-mcp/
+#   - action      https://developer.atlassian.com/platform/forge/manifest-reference/modules/rovo-action/
+#
+# Notes:
+# - The rovo:mcp module has NO description property in the official reference
+#   (only key, name, tools), so none is declared here.
+# - The rovo:skill module references its directory via source.dir, and declares
+#   its action dependencies via dependencies.tools.
+# - No license key is declared by design: apps with a license cannot be shared
+#   via an installation link, which is how the judges install Unjam.
+# - No permissions.external: Unjam runs entirely on Atlassian (no egress).
+#
+# The app.id below is a placeholder. The submitter replaces it by running
+# `forge register` (requires login) before the first deploy.
+
+modules:
+  jira:issuePanel:
+    - key: unjam-issue-panel
+      resource: issue-panel
+      resolver:
+        function: resolver
+      render: native
+      title: Unjam
+
+  jira:projectPage:
+    - key: unjam-project-page
+      resource: project-page
+      resolver:
+        function: resolver
+      render: native
+      title: Unjam — Blocked Work
+
+  rovo:agent:
+    - key: unjam-agent
+      name: Unjam
+      description: Finds who can unblock stuck Jira work, explains why, drafts the ask, and follows up.
+      prompt: resource:agent-prompt;agent.md
+      conversationStarters:
+        - Who can unblock this issue?
+        - What is the most expensive blocker in this project?
+        - Draft an unblock request for me.
+      actions:
+        - get-blockers
+        - find-unblockers
+        - get-block-cost
+        - draft-unblock-request
+        - send-unblock-request
+      skills:
+        - unblock-playbook
+
+  action:
+    - key: get-blockers
+      name: Get blockers
+      function: get-blockers
+      actionVerb: GET
+      description: >
+        What is blocking this Jira issue? Traces the chain of issues blocking it,
+        including blockers of blockers, and reports each blocker's status, assignee,
+        and how many other issues are waiting on it.
+      inputs:
+        issueKey:
+          title: Issue key
+          type: string
+          required: false
+          description: The Jira issue key to trace blockers for, for example ORB-42. When omitted, the issue currently open in Jira is used.
+
+    - key: find-unblockers
+      name: Find unblockers
+      function: find-unblockers
+      actionVerb: GET
+      description: >
+        Who can unblock this Jira issue, and why are they the best person to ask?
+        Ranks the people who can open the blocker — its owner, recent contributors,
+        and experts on similar work — with an explainable score for each candidate.
+      inputs:
+        issueKey:
+          title: Issue key
+          type: string
+          required: false
+          description: The Jira issue key to find unblockers for, for example ORB-42. When omitted, the issue currently open in Jira is used.
+
+    - key: get-block-cost
+      name: Get block cost
+      function: get-block-cost
+      actionVerb: GET
+      description: >
+        How expensive is this blocker — or which blocker in this project costs the
+        team the most? Scores the cost of waiting from the blocker's age, how many
+        issues are waiting on it, how close the deadline is, and the priority.
+      inputs:
+        issueKey:
+          title: Issue key
+          type: string
+          required: false
+          description: The Jira issue key whose block cost to score, for example ORB-42. When omitted, the issue currently open in Jira is used.
+        projectKey:
+          title: Project key
+          type: string
+          required: false
+          description: The Jira project key to rank blocked work for, for example ORB. When provided, returns the most expensive blockers in the project instead of scoring a single issue.
+
+    - key: draft-unblock-request
+      name: Draft unblock request
+      function: draft-unblock-request
+      actionVerb: GET
+      description: >
+        What should I say to the person who can unblock this issue? Drafts a polite,
+        ready-to-send request mentioning the best unblocker, with the context they
+        need: what is blocked, for how long, and what is waiting on it.
+      inputs:
+        issueKey:
+          title: Issue key
+          type: string
+          required: false
+          description: The Jira issue key to draft an unblock request for, for example ORB-42. When omitted, the issue currently open in Jira is used.
+        unblocker:
+          title: Unblocker
+          type: string
+          required: false
+          description: The name of the person to address the request to. When omitted, the top-ranked unblocker is used.
+
+    - key: send-unblock-request
+      name: Send unblock request
+      function: send-unblock-request
+      actionVerb: CREATE
+      description: >
+        Can you send the unblock request to the person who can unblock this issue?
+        Posts the request as a comment on the blocking issue, mentions the
+        unblocker, and starts tracking it so Unjam follows up if the blocker
+        is still open after 48 hours. Only call this after the user has seen
+        the draft and explicitly confirmed they want it sent.
+      inputs:
+        issueKey:
+          title: Issue key
+          type: string
+          required: false
+          description: The Jira issue key to send an unblock request for, for example ORB-42. When omitted, the issue currently open in Jira is used.
+        unblocker:
+          title: Unblocker
+          type: string
+          required: false
+          description: The name of the person to address the request to. When omitted, the top-ranked unblocker is used.
+        message:
+          title: Additional message
+          type: string
+          required: false
+          description: An extra note from the user to include in the posted comment, for example extra context or a deadline.
+
+  rovo:skill:
+    - key: unblock-playbook
+      source:
+        dir: skills/unblock-playbook
+      dependencies:
+        tools:
+          - get-blockers
+          - find-unblockers
+          - get-block-cost
+          - draft-unblock-request
+          - send-unblock-request
+
+  rovo:mcp:
+    - key: unjam-mcp
+      name: Unjam
+      tools:
+        - get-blockers
+        - find-unblockers
+        - get-block-cost
+        - draft-unblock-request
+        - send-unblock-request
+
+  scheduledTrigger:
+    - key: unjam-daily-watch
+      function: watch
+      interval: day
+
+  function:
+    - key: resolver
+      handler: resolver.handler
+    - key: get-blockers
+      handler: index.getBlockers
+    - key: find-unblockers
+      handler: index.findUnblockers
+    - key: get-block-cost
+      handler: index.getBlockCost
+    - key: draft-unblock-request
+      handler: index.draftUnblockRequest
+    - key: send-unblock-request
+      handler: index.sendUnblockRequest
+    - key: watch
+      handler: scheduled.run
+      timeoutSeconds: 300
+
+resources:
+  - key: issue-panel
+    path: src/frontend/issue-panel.jsx
+  - key: project-page
+    path: src/frontend/project-page.jsx
+  - key: agent-prompt
+    path: prompts
+
+permissions:
+  scopes:
+    - read:jira-work
+    - read:jira-user
+    - write:jira-work
+    - storage:app
+    - read:graph:issue:jira
+    - read:graph:issue-status:jira
+    - read:graph:issue-comment:jira
+    - read:graph:user:atlassian
+    - read:graph:team:atlassian
+
+app:
+  runtime:
+    name: nodejs24.x
+  id: ari:cloud:ecosystem::app/REPLACE-ME-RUN-forge-register

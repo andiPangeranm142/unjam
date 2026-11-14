@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Unjam — a broken chain opening into a clear path">
+  <title>Unjam</title>
+  <desc>A chain link broken open, its two halves parting to reveal a clear forward path — blocked work, unblocked.</desc>
+  <!-- Rounded tile -->
+  <rect x="2" y="2" width="60" height="60" rx="14" fill="#0052CC"/>
+  <!-- Left chain link (broken, opening outward) -->
+  <path d="M30 22.5c-1.5-2.6-4.3-4-7.2-3.7-3.9.4-6.8 3.7-6.8 7.6 0 4.2 3.4 7.6 7.6 7.6 1.9 0 3.7-.7 5.1-2"
+        fill="none" stroke="#FFFFFF" stroke-width="4" stroke-linecap="round"/>
+  <!-- Right chain link (broken, opening outward) -->
+  <path d="M34 41.5c1.5 2.6 4.3 4 7.2 3.7 3.9-.4 6.8-3.7 6.8-7.6 0-4.2-3.4-7.6-7.6-7.6-1.9 0-3.7.7-5.1 2"
+        fill="none" stroke="#FFFFFF" stroke-width="4" stroke-linecap="round"/>
+  <!-- The break: two small sparks where the chain snapped -->
+  <circle cx="28.5" cy="25.5" r="2" fill="#4C9AFF"/>
+  <circle cx="35.5" cy="38.5" r="2" fill="#4C9AFF"/>
+  <!-- The open path: a forward arrow through the gap -->
+  <path d="M26 32h14" fill="none" stroke="#FFFFFF" stroke-width="4" stroke-linecap="round"/>
+  <path d="M35 25.5 42 32l-7 6.5" fill="none" stroke="#FFFFFF" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
