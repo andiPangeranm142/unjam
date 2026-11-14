@@ -141,16 +141,29 @@ unavailable — the panel, project page, and daily watch still work.
    `get-block-cost`, `draft-unblock-request`, `send-unblock-request`) appear
    and behave exactly as they do in Rovo chat.
 
-## 7. The daily watch (no action needed)
+## 7. Try the admin settings (1 minute)
 
-Once a day, Unjam checks every tracked request. If a blocker is still open 48
-hours after a request was sent, a follow-up comment is posted on the blocking
-issue and the row is flagged as escalated on the project page. If the blocker
-is resolved, tracking is cleared and the waiting issue gets a "cleared"
-comment. The watch starts about 5 minutes after install and runs at a
-consistent time per installation — the exact hour cannot be chosen, so
-same-day verification is usually not possible; the tracking banner on the
-issue panel shows the request is being watched.
+1. In Jira, go to **Settings → Apps → Manage apps**, open **Unjam**, and click
+   **Configure** (or Jira Settings → Apps → Unjam settings).
+2. **Expected:** a settings page with three controls — the follow-up SLA
+   (default 48 hours), an automatic follow-up on/off switch, and the cost
+   threshold that counts a blocker as "critical" on the board (default 75).
+3. Change the SLA to 24 hours and save. **Expected:** a "Settings saved"
+   confirmation. New requests now track against a 24-hour SLA; requests
+   already in flight keep the SLA they were sent with. (You can change it
+   back to 48 hours afterwards.)
+
+## 8. The daily watch (no action needed)
+
+Once a day, Unjam checks every tracked request. If a blocker is still open
+when a request's SLA expires (48 hours by default — see section 7), a
+follow-up comment is posted on the blocking issue and the row is flagged as
+escalated on the project page. If the blocker is resolved, tracking is
+cleared and the waiting issue gets a "cleared" comment. The watch starts
+about 5 minutes after install and runs at a consistent time per
+installation — the exact hour cannot be chosen, so same-day verification is
+usually not possible; the tracking banner on the issue panel shows the
+request is being watched.
 
 ## Troubleshooting
 
@@ -170,6 +183,7 @@ issue panel shows the request is being watched.
 | --- | --- |
 | Issue panel | Any issue → **Unjam** button above Activity |
 | Project page | Project navigation → **Unjam — Blocked Work** tab |
+| Admin settings | Manage apps → Unjam → **Configure** |
 | Rovo agent | Rovo chat → **Browse agents** → **Unjam** |
 | MCP endpoint | `https://mcp.atlassian.com/forge/<appId>` (enable in Connected apps first) |
 | Daily watch | Automatic; tracking banner on the issue panel shows watched requests |

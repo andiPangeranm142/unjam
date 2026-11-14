@@ -1,0 +1,728 @@
+/* Unjam design system (Custom UI).
+ *
+ * Colors come from Atlassian design tokens (--ds-*) injected into this
+ * iframe by view.theme.enable(), so the app follows Jira's light/dark
+ * theme automatically. Every token has a light-theme fallback so the UI
+ * still renders if theming fails. Brand accents are Unjam's own (indigo
+ * -> cyan) and are theme-safe in both modes.
+ *
+ * Motion: 180-240ms ease-out transitions, staggered fade-up entrances,
+ * animated score rings and progress bars. Nothing flashes or jumps:
+ * skeletons hold layout while data loads.
+ */
+
+:root {
+  /* Surfaces & text (Atlassian tokens + fallbacks) */
+  --uj-surface: var(--ds-surface, #ffffff);
+  --uj-surface-raised: var(--ds-surface-raised, #ffffff);
+  --uj-surface-sunken: var(--ds-surface-sunken, #f4f5f7);
+  --uj-surface-overlay: var(--ds-surface-overlay, #ffffff);
+  --uj-text: var(--ds-text, #172b4d);
+  --uj-text-subtle: var(--ds-text-subtle, #44546f);
+  --uj-text-subtlest: var(--ds-text-subtlest, #626f86);
+  --uj-text-inverse: var(--ds-text-inverse, #ffffff);
+  --uj-text-brand: var(--ds-text-brand, #0c66e4);
+  --uj-text-success: var(--ds-text-success, #006644);
+  --uj-text-danger: var(--ds-text-danger, #ae2e24);
+  --uj-text-warning: var(--ds-text-warning, #974f00);
+  --uj-text-info: var(--ds-text-information, #0747a6);
+  --uj-border: var(--ds-border, #dfe1e6);
+  --uj-border-bold: var(--ds-border-bold, #c1c7d0);
+  --uj-border-input: var(--ds-border-input, #8590a2);
+  --uj-border-focused: var(--ds-border-focused, #388bff);
+  --uj-bg-neutral: var(--ds-background-neutral, #f4f5f7);
+  --uj-bg-neutral-hover: var(--ds-background-neutral-hovered, #ebecf0);
+  --uj-bg-neutral-pressed: var(--ds-background-neutral-pressed, #dfe1e6);
+  --uj-bg-brand: var(--ds-background-brand-bold, #0c66e4);
+  --uj-bg-brand-hover: var(--ds-background-brand-bold-hovered, #0055cc);
+  --uj-bg-success: var(--ds-background-success, #e3fcef);
+  --uj-bg-success-bold: var(--ds-background-success-bold, #00875a);
+  --uj-bg-danger: var(--ds-background-danger, #ffebe6);
+  --uj-bg-danger-bold: var(--ds-background-danger-bold, #de350b);
+  --uj-bg-warning: var(--ds-background-warning, #fffae6);
+  --uj-bg-warning-bold: var(--ds-background-warning-bold, #ff8b00);
+  --uj-bg-info: var(--ds-background-information, #deebff);
+  --uj-bg-selected: var(--ds-background-selected, #e9f2ff);
+  --uj-bg-input: var(--ds-background-input, #ffffff);
+  --uj-shadow-raised: var(--ds-shadow-raised, 0 1px 1px rgba(9, 30, 66, 0.25), 0 0 1px rgba(9, 30, 66, 0.31));
+  --uj-shadow-overlay: var(--ds-shadow-overlay, 0 8px 12px rgba(9, 30, 66, 0.15), 0 0 1px rgba(9, 30, 66, 0.31));
+
+  /* Unjam brand */
+  --uj-accent: #5b4dbc;
+  --uj-accent-strong: #403294;
+  --uj-accent-soft: rgba(109, 93, 246, 0.12);
+  --uj-cyan: #00a3bf;
+  --uj-gradient: linear-gradient(135deg, #6d5df6 0%, #00a3bf 100%);
+  --uj-score-high: #00875a;
+  --uj-score-mid: #ff8b00;
+  --uj-score-low: #de350b;
+  --uj-cost-critical: #de350b;
+  --uj-cost-high: #ff8b00;
+  --uj-cost-medium: #0065ff;
+  --uj-cost-low: #6b778c;
+
+  /* Shape & motion */
+  --uj-radius: 12px;
+  --uj-radius-sm: 8px;
+  --uj-radius-pill: 999px;
+  --uj-ease: cubic-bezier(0.2, 0, 0, 1);
+  --uj-duration: 200ms;
+}
+
+html[data-color-mode='dark'] {
+  --uj-accent-soft: rgba(109, 93, 246, 0.22);
+  --uj-shadow-raised: 0 1px 1px rgba(0, 0, 0, 0.4), 0 0 1px rgba(0, 0, 0, 0.5);
+  --uj-shadow-overlay: 0 8px 12px rgba(0, 0, 0, 0.45), 0 0 1px rgba(0, 0, 0, 0.5);
+}
+
+/* ------------------------------------------------------------------ */
+/* Base                                                                */
+/* ------------------------------------------------------------------ */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background: var(--uj-surface);
+  color: var(--uj-text);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-size: 14px;
+  line-height: 1.45;
+  -webkit-font-smoothing: antialiased;
+}
+
+.uj-root {
+  padding: 16px;
+}
+
+.uj-root--wide {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.uj-muted {
+  color: var(--uj-text-subtle);
+}
+
+.uj-subtlest {
+  color: var(--uj-text-subtlest);
+}
+
+.uj-small {
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.uj-strong {
+  font-weight: 600;
+}
+
+.uj-num {
+  font-variant-numeric: tabular-nums;
+}
+
+.uj-divider {
+  height: 1px;
+  background: var(--uj-border);
+  border: 0;
+  margin: 4px 0;
+}
+
+/* ------------------------------------------------------------------ */
+/* Motion                                                              */
+/* ------------------------------------------------------------------ */
+
+@keyframes uj-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes uj-shimmer {
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -200% 0;
+  }
+}
+
+@keyframes uj-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes uj-pop {
+  0% {
+    transform: scale(0.94);
+  }
+  60% {
+    transform: scale(1.03);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.uj-fade-up {
+  animation: uj-fade-up 320ms var(--uj-ease) both;
+  animation-delay: var(--uj-delay, 0ms);
+}
+
+.uj-pop {
+  animation: uj-pop 260ms var(--uj-ease) both;
+}
+
+/* ------------------------------------------------------------------ */
+/* Cards                                                               */
+/* ------------------------------------------------------------------ */
+
+.uj-card {
+  background: var(--uj-surface-raised);
+  border: 1px solid var(--uj-border);
+  border-radius: var(--uj-radius);
+  padding: 12px 14px;
+  transition:
+    border-color var(--uj-duration) var(--uj-ease),
+    box-shadow var(--uj-duration) var(--uj-ease),
+    transform var(--uj-duration) var(--uj-ease);
+}
+
+.uj-card--interactive:hover {
+  border-color: var(--uj-border-bold);
+  box-shadow: var(--uj-shadow-raised);
+}
+
+.uj-card--hero {
+  background:
+    linear-gradient(135deg, rgba(109, 93, 246, 0.1), rgba(0, 163, 191, 0.08)),
+    var(--uj-surface-raised);
+  border-color: rgba(109, 93, 246, 0.25);
+}
+
+.uj-card--sunken {
+  background: var(--uj-surface-sunken);
+  border-color: transparent;
+}
+
+/* ------------------------------------------------------------------ */
+/* Buttons                                                             */
+/* ------------------------------------------------------------------ */
+
+.uj-btn {
+  appearance: none;
+  border: 1px solid transparent;
+  border-radius: var(--uj-radius-sm);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1;
+  padding: 9px 14px;
+  transition:
+    background var(--uj-duration) var(--uj-ease),
+    box-shadow var(--uj-duration) var(--uj-ease),
+    transform 120ms var(--uj-ease),
+    opacity var(--uj-duration) var(--uj-ease);
+  user-select: none;
+  white-space: nowrap;
+}
+
+.uj-btn:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.uj-btn:focus-visible {
+  outline: 2px solid var(--uj-border-focused);
+  outline-offset: 2px;
+}
+
+.uj-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.uj-btn--primary {
+  background: var(--uj-gradient);
+  background-color: var(--uj-accent);
+  color: #ffffff;
+  box-shadow: 0 1px 2px rgba(64, 50, 148, 0.4);
+}
+
+.uj-btn--primary:hover:not(:disabled) {
+  box-shadow: 0 4px 12px rgba(91, 77, 188, 0.45);
+  transform: translateY(-1px);
+}
+
+.uj-btn--subtle {
+  background: var(--uj-bg-neutral);
+  color: var(--uj-text);
+}
+
+.uj-btn--subtle:hover:not(:disabled) {
+  background: var(--uj-bg-neutral-hover);
+}
+
+.uj-btn--sm {
+  font-size: 12px;
+  padding: 7px 11px;
+}
+
+.uj-btn--block {
+  width: 100%;
+}
+
+.uj-btn__spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  border-top-color: #ffffff;
+  border-radius: 50%;
+  animation: uj-spin 700ms linear infinite;
+}
+
+.uj-btn--subtle .uj-btn__spinner {
+  border-color: rgba(23, 43, 77, 0.25);
+  border-top-color: var(--uj-text);
+}
+
+/* Text link styled as a Jira link (uses router.navigate on click). */
+.uj-link {
+  background: none;
+  border: 0;
+  color: var(--uj-text-brand);
+  cursor: pointer;
+  font: inherit;
+  font-weight: 600;
+  padding: 0;
+  text-decoration: none;
+}
+
+.uj-link:hover {
+  text-decoration: underline;
+}
+
+/* ------------------------------------------------------------------ */
+/* Pills, lozenges, badges                                             */
+/* ------------------------------------------------------------------ */
+
+.uj-pill {
+  align-items: center;
+  border-radius: var(--uj-radius-pill);
+  display: inline-flex;
+  font-size: 12px;
+  font-weight: 600;
+  gap: 5px;
+  line-height: 1;
+  padding: 5px 9px;
+  white-space: nowrap;
+}
+
+.uj-pill--critical {
+  background: var(--uj-bg-danger);
+  color: var(--uj-text-danger);
+}
+
+.uj-pill--high {
+  background: var(--uj-bg-warning);
+  color: var(--uj-text-warning);
+}
+
+.uj-pill--medium {
+  background: var(--uj-bg-info);
+  color: var(--uj-text-info);
+}
+
+.uj-pill--low {
+  background: var(--uj-bg-neutral);
+  color: var(--uj-text-subtle);
+}
+
+.uj-pill--success {
+  background: var(--uj-bg-success);
+  color: var(--uj-text-success);
+}
+
+.uj-pill--brand {
+  background: var(--uj-accent-soft);
+  color: var(--uj-accent-strong);
+}
+
+html[data-color-mode='dark'] .uj-pill--brand {
+  color: #b8aef5;
+}
+
+.uj-pill__dot {
+  border-radius: 50%;
+  height: 6px;
+  width: 6px;
+  background: currentColor;
+  flex: none;
+}
+
+.uj-lozenge {
+  border-radius: 3px;
+  display: inline-flex;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  line-height: 1;
+  padding: 3px 5px;
+  text-transform: uppercase;
+}
+
+.uj-lozenge--success {
+  background: var(--uj-bg-success-bold);
+  color: #ffffff;
+}
+
+.uj-lozenge--inprogress {
+  background: var(--uj-bg-brand);
+  color: #ffffff;
+}
+
+.uj-lozenge--default {
+  background: var(--uj-bg-neutral);
+  color: var(--uj-text-subtle);
+}
+
+/* ------------------------------------------------------------------ */
+/* Score ring + progress bar                                           */
+/* ------------------------------------------------------------------ */
+
+.uj-score-ring {
+  position: relative;
+  flex: none;
+}
+
+.uj-score-ring svg {
+  display: block;
+  transform: rotate(-90deg);
+}
+
+.uj-score-ring__track {
+  stroke: var(--uj-bg-neutral);
+}
+
+.uj-score-ring__value {
+  stroke-linecap: round;
+  transition: stroke-dashoffset 700ms var(--uj-ease);
+}
+
+.uj-score-ring__number {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.uj-progress {
+  background: var(--uj-bg-neutral);
+  border-radius: var(--uj-radius-pill);
+  height: 6px;
+  overflow: hidden;
+  width: 100%;
+}
+
+.uj-progress__bar {
+  border-radius: inherit;
+  height: 100%;
+  transition: width 600ms var(--uj-ease);
+}
+
+/* ------------------------------------------------------------------ */
+/* Avatar                                                              */
+/* ------------------------------------------------------------------ */
+
+.uj-avatar {
+  align-items: center;
+  background: var(--uj-gradient);
+  border-radius: 50%;
+  color: #ffffff;
+  display: inline-flex;
+  flex: none;
+  font-weight: 700;
+  justify-content: center;
+  overflow: hidden;
+  user-select: none;
+}
+
+.uj-avatar img {
+  height: 100%;
+  width: 100%;
+  object-fit: cover;
+}
+
+.uj-avatar--sm {
+  font-size: 10px;
+  height: 24px;
+  width: 24px;
+}
+
+.uj-avatar--md {
+  font-size: 12px;
+  height: 32px;
+  width: 32px;
+}
+
+.uj-avatar--lg {
+  font-size: 14px;
+  height: 40px;
+  width: 40px;
+}
+
+/* ------------------------------------------------------------------ */
+/* Banners, states, skeletons                                          */
+/* ------------------------------------------------------------------ */
+
+.uj-banner {
+  border: 1px solid var(--uj-border);
+  border-radius: var(--uj-radius-sm);
+  display: flex;
+  gap: 10px;
+  padding: 11px 13px;
+  align-items: flex-start;
+}
+
+.uj-banner--success {
+  background: var(--uj-bg-success);
+  border-color: transparent;
+}
+
+.uj-banner--info {
+  background: var(--uj-bg-info);
+  border-color: transparent;
+}
+
+.uj-banner--warning {
+  background: var(--uj-bg-warning);
+  border-color: transparent;
+}
+
+.uj-banner--danger {
+  background: var(--uj-bg-danger);
+  border-color: transparent;
+}
+
+.uj-banner__icon {
+  flex: none;
+  font-size: 15px;
+  line-height: 1.3;
+}
+
+.uj-banner__title {
+  font-weight: 700;
+  margin-bottom: 1px;
+}
+
+.uj-state {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 28px 16px;
+  text-align: center;
+}
+
+.uj-state__glyph {
+  font-size: 28px;
+  line-height: 1;
+}
+
+.uj-state__title {
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.uj-spinner {
+  width: 28px;
+  height: 28px;
+  border: 3px solid var(--uj-bg-neutral);
+  border-top-color: var(--uj-accent);
+  border-radius: 50%;
+  animation: uj-spin 800ms linear infinite;
+}
+
+.uj-skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--uj-bg-neutral) 25%,
+    var(--uj-bg-neutral-hover) 50%,
+    var(--uj-bg-neutral) 75%
+  );
+  background-size: 200% 100%;
+  animation: uj-shimmer 1400ms ease-in-out infinite;
+  border-radius: 6px;
+}
+
+/* ------------------------------------------------------------------ */
+/* Forms (admin page)                                                  */
+/* ------------------------------------------------------------------ */
+
+.uj-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.uj-label {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.uj-hint {
+  color: var(--uj-text-subtle);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.uj-input,
+.uj-select {
+  background: var(--uj-bg-input);
+  border: 1px solid var(--uj-border-input);
+  border-radius: var(--uj-radius-sm);
+  color: var(--uj-text);
+  font: inherit;
+  font-size: 14px;
+  padding: 8px 10px;
+  transition:
+    border-color var(--uj-duration) var(--uj-ease),
+    box-shadow var(--uj-duration) var(--uj-ease);
+  width: 100%;
+}
+
+.uj-input:focus,
+.uj-select:focus {
+  border-color: var(--uj-border-focused);
+  box-shadow: 0 0 0 2px rgba(56, 139, 255, 0.25);
+  outline: none;
+}
+
+.uj-input--inline {
+  width: 110px;
+}
+
+.uj-toggle {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.uj-toggle input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.uj-toggle__track {
+  background: var(--uj-bg-neutral-pressed);
+  border-radius: var(--uj-radius-pill);
+  height: 22px;
+  position: relative;
+  transition: background var(--uj-duration) var(--uj-ease);
+  width: 40px;
+  flex: none;
+}
+
+.uj-toggle__track::after {
+  background: #ffffff;
+  border-radius: 50%;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+  content: '';
+  height: 18px;
+  left: 2px;
+  position: absolute;
+  top: 2px;
+  transition: transform var(--uj-duration) var(--uj-ease);
+  width: 18px;
+}
+
+.uj-toggle input:checked + .uj-toggle__track {
+  background: var(--uj-bg-success-bold);
+}
+
+.uj-toggle input:checked + .uj-toggle__track::after {
+  transform: translateX(18px);
+}
+
+.uj-toggle input:focus-visible + .uj-toggle__track {
+  outline: 2px solid var(--uj-border-focused);
+  outline-offset: 2px;
+}
+
+/* ------------------------------------------------------------------ */
+/* Layout helpers                                                      */
+/* ------------------------------------------------------------------ */
+
+.uj-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.uj-stack--tight {
+  gap: 8px;
+}
+
+.uj-stack--loose {
+  gap: 20px;
+}
+
+.uj-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.uj-row--spread {
+  justify-content: space-between;
+}
+
+.uj-row--wrap {
+  flex-wrap: wrap;
+}
+
+.uj-section-title {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--uj-text-subtlest);
+}
+
+.uj-heading {
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.3;
+  margin: 0;
+}
+
+.uj-heading--lg {
+  font-size: 20px;
+}

@@ -70,17 +70,19 @@ find unblockers, weigh the cost, draft, confirm, then send and track.
 - **"Send the request."** If a draft has been shown and the user confirms, call
   `send-unblock-request`. Then confirm what happened: which issue the comment was
   posted on, who was mentioned, and that Unjam will follow up automatically if the
-  blocker is still open after 48 hours. If no draft has been shown yet, show one
-  first and ask for confirmation.
+  blocker is still open when the configured SLA expires (48 hours by default).
+  If no draft has been shown yet, show one first and ask for confirmation.
 
 ## Follow-up and escalation
 
-Once a request is sent, Unjam tracks it. If the blocker is still open 48 hours
-later, an automatic follow-up comment is posted on the blocking issue, and the
-project page flags the request as escalated. If the blocker is resolved, tracking
-is cleared and the waiting issue is notified. If a user asks about the status of a
-request, check the issue panel or project page rather than guessing — you do not
-have an action that reads tracking state, so say so if asked directly.
+Once a request is sent, Unjam tracks it. If the blocker is still open when the
+configured SLA expires (48 hours by default; a Jira admin can change it in
+Unjam settings), an automatic follow-up comment is posted on the blocking
+issue, and the project page flags the request as escalated. If the blocker is
+resolved, tracking is cleared and the waiting issue is notified. If a user asks
+about the status of a request, check the issue panel or project page rather
+than guessing — you do not have an action that reads tracking state, so say so
+if asked directly.
 
 ## Tone
 

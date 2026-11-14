@@ -7,7 +7,7 @@ answer about a blocked issue: **who can unblock this**, and **what should I say
 to them?** It traces blocker chains across projects and teams, ranks the people
 who can open the blocker with a deterministic, explainable score, drafts the
 request, sends it with one click — and follows up automatically if nothing moves
-within 48 hours.
+within the configured SLA (48 hours by default).
 
 Built for **Codegeist 2026** (Apps for Software Teams), targeting the **Teamwork
 Graph**, **Rovo Agents**, and **Atlassian MCP** bonuses.
@@ -36,16 +36,17 @@ For every blocked issue, Unjam:
    priority) so teams fix the most expensive blocker first.
 4. **Drafts the ask** — a polite @mention comment, ready to send.
 5. **Tracks it until it moves** — one click posts the request and starts
-   tracking; if the blocker is still open after the 48-hour SLA, Unjam posts a
-   follow-up automatically; when the blocker clears, the waiting issue is
-   notified.
+   tracking; if the blocker is still open when the configured SLA expires,
+   Unjam posts a follow-up automatically; when the blocker clears, the waiting
+   issue is notified.
 
 ## Features
 
 | Surface | What you get |
 | --- | --- |
-| **Jira issue panel** (UI Kit 2) | "Blocked by ORB-31 — ask Priya, here's why": ranked unblockers with avatars, score badges, and reasons; the blocker chain; the draft; a **Send request** button; live tracking status. Clear empty state when the issue is not blocked. |
-| **Jira project page** (UI Kit 2) | All blocked work in the project, ranked by block cost: waiting issue, blocked by, age, waiting count, cost badge, and top unblocker. |
+| **Jira issue panel** (Custom UI) | "Blocked by ORB-31 — ask Priya, here's why": ranked unblockers with avatars, animated score rings, and reasons; the blocker chain; the draft; a **Send request** button; live tracking status. Clear empty state when the issue is not blocked. |
+| **Jira project page** (Custom UI) | All blocked work in the project, ranked by block cost: waiting issue, blocked by, age, waiting count, cost badge, and top unblocker — with sorting, filtering, and a summary of blocked / critical / open work. |
+| **Admin settings page** (Custom UI, Configure) | Jira admins set the follow-up SLA duration (default 48h), turn automatic follow-up on or off, and set the cost threshold that counts a blocker as "critical" on the board. Reach it from Manage apps → Unjam → Configure. |
 | **Rovo agent "Unjam"** | Ask in plain language: "Who can unblock this issue?", "What is the most expensive blocker in this project?", "Draft an unblock request for me." The agent always shows the draft and asks for confirmation before sending anything. |
 | **Rovo skill `unblock-playbook`** | A step-by-step playbook that orchestrates the five actions — trace → rank → weigh → draft → confirm → send → track — including SLA rules and edge cases. |
 | **MCP tools (`rovo:mcp`)** | The same five actions exposed as MCP tools for custom agents in Rovo Studio and external MCP clients (Claude, Cursor, VS Code). |
@@ -55,12 +56,13 @@ For every blocked issue, Unjam:
 
 ```
                         ┌─────────────────────────────┐
-                        │  Jira issue panel (UI Kit)  │
-                        │  Jira project page (UI Kit) │
+                        │  Jira issue panel (Custom UI)│
+                        │  Jira project page (Custom UI)│
+                        │  Admin settings (Custom UI) │
                         └──────────────┬──────────────┘
                                        │ invoke()
                         ┌──────────────▼──────────────┐
-                        │   resolver.js (UI Kit)      │
+                        │   resolver.js               │
                         └──────────────┬──────────────┘
                                        │
    Rovo chat ──► Rovo agent "Unjam" ──►│  index.js (5 action handlers)
@@ -90,11 +92,12 @@ For every blocked issue, Unjam:
                     └─────────────────────────────────┘
 ```
 
-One engine, four surfaces: the issue panel, the project page, the Rovo agent,
-and the MCP tools all run the same `buildUnblockPlan` / `buildProjectBlocks`
-logic. The Rovo skill is the playbook that tells the agent how to sequence the
-actions; the daily watch is the only piece that runs without a user present
-(as the app, so it uses Jira REST only — Teamwork Graph is user-scoped).
+One engine, five surfaces: the issue panel, the project page, the admin
+settings page, the Rovo agent, and the MCP tools all run the same
+`buildUnblockPlan` / `buildProjectBlocks` logic. The Rovo skill is the
+playbook that tells the agent how to sequence the actions; the daily watch is
+the only piece that runs without a user present (as the app, so it uses Jira
+REST only — Teamwork Graph is user-scoped).
 
 ### Forge modules used
 
@@ -102,6 +105,7 @@ actions; the daily watch is the only piece that runs without a user present
 | --- | --- | --- |
 | `jira:issuePanel` | `unjam-issue-panel` | The unblock answer where the blocked work lives — on the issue itself. |
 | `jira:projectPage` | `unjam-project-page` | The project-wide view: every blocked issue ranked by what the wait costs. |
+| `jira:adminPage` | `unjam-admin-page` | Admin settings (Configure page): SLA duration, follow-up on/off, critical cost threshold. |
 | `rovo:agent` | `unjam-agent` | Plain-language access to the same engine ("Who can unblock this?"). |
 | `action` × 5 | `get-blockers`, `find-unblockers`, `get-block-cost`, `draft-unblock-request`, `send-unblock-request` | The executable capabilities the agent, the skill, and MCP all share. Four read-only (`GET`), one write (`CREATE`, confirmation-gated). |
 | `rovo:skill` | `unblock-playbook` | The multi-step playbook: trace → rank → weigh → draft → confirm → send → track, plus SLA and edge-case rules. |
@@ -199,7 +203,16 @@ so plainly.
 
 Open the project and click the **Unjam — Blocked Work** tab. Every blocked
 issue in the project, ranked by block cost, with its blocker, age, waiting
-count, cost badge, and top unblocker.
+count, cost badge, and top unblocker. Sort by cost, age, or waiting count,
+and filter by key or summary text.
+
+### Admin settings
+
+A Jira admin opens **Manage apps → Unjam → Configure** (or Jira Settings →
+Apps → Unjam settings) to change the follow-up SLA (default 48 hours), turn
+automatic follow-up on or off, and set the cost threshold that counts a
+blocker as "critical" on the board. Settings apply to requests sent after
+saving; requests already in flight keep the SLA they were sent with.
 
 ### Rovo agent
 
@@ -259,8 +272,11 @@ Honest notes, because judges should know what is verified and what is not:
 - **`forge lint` passes clean.** Run 14 Nov 2026 after login: "No issues
   found." (The local validator, `npm run validate`, replicates the main checks
   for offline use.)
-- **SLA is fixed at 48 hours in v1.** There is no admin page to change it yet;
-  configurable SLA is future work.
+- **SLA is configurable (since the Custom UI rebuild, 14 Nov 2026).** A Jira
+  admin sets the follow-up SLA (1–720 hours, default 48), the automatic
+  follow-up on/off switch, and the critical cost threshold (default 75) on
+  the Configure page. The previous UI Kit frontend is preserved on the
+  `uikit-fallback` branch.
 - **Scheduled trigger timing is per-installation.** The daily watch starts
   about 5 minutes after deploy and then runs at a consistent time per
   installation; the exact hour cannot be chosen.
@@ -280,7 +296,7 @@ unjam/
   README.md
   src/
     index.js                   Rovo action handlers (thin)
-    resolver.js                UI Kit resolver
+    resolver.js                Custom UI resolver (panel, board, settings)
     scheduled.js               Daily watch handler
     lib/
       forge-clients.js         Forge API adapters (asUser/asApp Jira + TWG)
@@ -291,16 +307,26 @@ unjam/
       scoring.js               Pure scoring (unblocker + block cost)
       draft.js                 Pure draft builders (ADF comments)
       tracking.js              Request tracking (storage injected)
+      settings.js              Admin settings (SLA, follow-up, threshold)
       plan.js                  Orchestrator: buildUnblockPlan, buildProjectBlocks
-    frontend/
-      issue-panel.jsx          UI Kit 2 issue panel
-      project-page.jsx         UI Kit 2 project page
+  static/
+    unjam-ui/                  Custom UI: one Vite + React project, three
+      package.json               entries (issue panel, project page, admin
+      vite.config.js             settings). Build with `npm run build:ui`
+      issue-panel.html           before `forge deploy`; Forge serves
+      project-page.html          static/unjam-ui/build/
+      admin-page.html
+      src/
+        shared/                Design tokens, bridge helpers, components
+        issue-panel/           Issue panel app
+        project-page/          Project board app
+        admin/                 Admin settings app
+  assets/
+    icon.svg                   App icon
   prompts/
     agent.md                   Rovo agent prompt
   skills/
     unblock-playbook/SKILL.md  Rovo skill playbook
-  static/
-    icon.svg                   App icon
   scripts/
     validate-manifest.mjs      Local manifest validator (forge lint stand-in)
   test/                        Jest tests (pure logic + fake clients)
@@ -314,8 +340,11 @@ unjam/
 
 ```bash
 npm test            # Jest: pure logic (scoring, chain, draft, candidates,
-                    # tracking, plan) plus TWG client tests with fake clients
+                    # tracking, settings, plan) plus TWG client tests with
+                    # fake clients
 npm run validate    # Local manifest validator (see scripts/validate-manifest.mjs)
+npm run build:ui    # Build the Custom UI frontends (Vite) — required before
+                    # `forge deploy`; Forge serves static/unjam-ui/build/
 ```
 
 `forge lint`, `forge deploy`, and `forge install` require a logged-in Forge CLI

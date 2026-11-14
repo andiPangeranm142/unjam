@@ -393,15 +393,27 @@ for (const resource of resources) {
 }
 
 // UI modules must reference declared resources and resolver functions.
+// A module resource may use the multi-entry slash syntax
+// (`resource-key/entry-key`); then both the resource and the named entry
+// must exist, and the entry file must be present under the resource path
+// (for Custom UI: run `npm run build:ui` first).
 for (const [moduleType, entries] of Object.entries(modules)) {
   if (!moduleType.startsWith('jira:')) continue;
   for (const entry of asArray(entries)) {
     if (entry.resource) {
-      check(
-        `${moduleType} '${entry.key}' resource '${entry.resource}' is declared`,
-        resourceByKey.has(entry.resource),
-        resourceByKey.has(entry.resource) ? '' : `no resource with key '${entry.resource}'`,
-      );
+      const [resourceKey, entryKey] = String(entry.resource).split('/');
+      const resource = resources.find((r) => r.key === resourceKey);
+      const label = `${moduleType} '${entry.key}' resource '${entry.resource}' is declared`;
+      if (!resource) {
+        check(label, false, `no resource with key '${resourceKey}'`);
+      } else if (entryKey === undefined) {
+        check(label, true, '');
+      } else if (!resource.entry || !(entryKey in resource.entry)) {
+        check(label, false, `resource '${resourceKey}' has no entry '${entryKey}'`);
+      } else {
+        const entryFile = path.join(ROOT, resource.path, resource.entry[entryKey]);
+        check(label, fs.existsSync(entryFile), fs.existsSync(entryFile) ? '' : `entry file missing: ${resource.path}/${resource.entry[entryKey]} (run npm run build:ui)`);
+      }
     }
     if (entry.resolver?.function) {
       check(

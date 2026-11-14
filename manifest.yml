@@ -16,24 +16,37 @@
 # - No permissions.external: Unjam runs entirely on Atlassian (no egress).
 #
 # app.id registered 14 Nov 2026 via `forge register` (Developer Space Unjam).
+#
+# UI (from 14 Nov 2026 maximization): Forge Custom UI — one Vite + React
+# project under static/unjam-ui with three entries (issue panel, project
+# page, admin settings page). The previous UI Kit frontend is preserved on
+# the `uikit-fallback` branch. The icon lives in assets/ (not static/) so
+# the `static` resource does not sweep up the Vite project.
 
 modules:
   jira:issuePanel:
     - key: unjam-issue-panel
-      resource: issue-panel
+      resource: unjam-ui/panel
       resolver:
         function: resolver
-      render: native
       title: Unjam
       icon: resource:static;icon.svg
 
   jira:projectPage:
     - key: unjam-project-page
-      resource: project-page
+      resource: unjam-ui/page
       resolver:
         function: resolver
-      render: native
       title: Unjam — Blocked Work
+
+  jira:adminPage:
+    - key: unjam-admin-page
+      resource: unjam-ui/admin
+      resolver:
+        function: resolver
+      title: Unjam settings
+      useAsConfig: true
+      layout: blank
 
   rovo:agent:
     - key: unjam-agent
@@ -142,8 +155,8 @@ modules:
       description: >
         Send the unblock request to the person who can unblock this issue.
         Posts it as a comment on the blocking issue, mentions the unblocker,
-        and tracks it for a 48-hour follow-up. Only call after the user has
-        seen the draft and confirmed.
+        and tracks it for follow-up within the configured SLA. Only call after
+        the user has seen the draft and confirmed.
       inputs:
         issueKey:
           title: Issue key
@@ -209,14 +222,19 @@ modules:
       timeoutSeconds: 300
 
 resources:
-  - key: issue-panel
-    path: src/frontend/issue-panel.jsx
-  - key: project-page
-    path: src/frontend/project-page.jsx
+  # One Vite project (static/unjam-ui) with three HTML entries, one per
+  # module. Rebuild with `npm run build:ui` before `forge deploy` — Forge
+  # serves the built output, not the sources.
+  - key: unjam-ui
+    path: static/unjam-ui/build
+    entry:
+      panel: issue-panel.html
+      page: project-page.html
+      admin: admin-page.html
   - key: agent-prompt
     path: prompts
   - key: static
-    path: static
+    path: assets
 
 permissions:
   scopes:

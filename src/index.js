@@ -16,6 +16,7 @@ import { buildDraft } from './lib/draft.js';
 import { asUserJira, asUserTwg } from './lib/forge-clients.js';
 import { buildProjectBlocks, buildUnblockPlan } from './lib/plan.js';
 import { daysBetween } from './lib/scoring.js';
+import { DEFAULT_SETTINGS, getSettings } from './lib/settings.js';
 import { trackRequest } from './lib/tracking.js';
 
 const MAX_UNBLOCKERS = 6;
@@ -371,14 +372,22 @@ export async function sendUnblockRequest(payload) {
     const { id: commentId } = await jira.postComment(blocker.key, draft.adf);
 
     // Tracking failure must not fail the action — the comment is already live.
+    // The SLA comes from the admin settings (48h default).
     const notes = [...plan.notes];
     let tracking = null;
     try {
+      let slaHours = DEFAULT_SETTINGS.slaHours;
+      try {
+        slaHours = (await getSettings(kvs)).slaHours;
+      } catch {
+        // Settings unreadable — fall back to the default SLA.
+      }
       tracking = await trackRequest(kvs, {
         issueKey: plan.issue.key,
         blockerKey: blocker.key,
         unblockerAccountId: unblocker.accountId,
         unblockerName: unblocker.displayName,
+        slaHours,
       });
     } catch {
       notes.push(

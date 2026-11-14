@@ -10,6 +10,7 @@ import { buildDraft } from './lib/draft.js';
 import { asUserJira, asUserTwg } from './lib/forge-clients.js';
 import { buildProjectBlocks, buildUnblockPlan } from './lib/plan.js';
 import { daysBetween } from './lib/scoring.js';
+import { DEFAULT_SETTINGS, getSettings, saveSettings } from './lib/settings.js';
 import { getTracked, trackRequest } from './lib/tracking.js';
 
 // @forge/resolver is a CommonJS module whose class is its `default` export.
@@ -39,7 +40,21 @@ function errorText(err) {
 
 function personSummary(person) {
   if (!person) return null;
-  return { accountId: person.accountId, displayName: person.displayName };
+  return {
+    accountId: person.accountId,
+    displayName: person.displayName,
+    ...(person.avatarUrl ? { avatarUrl: person.avatarUrl } : {}),
+  };
+}
+
+// Admin settings are secondary to the plan/board data: a failed read falls
+// back to defaults instead of failing the whole call.
+async function readSettings() {
+  try {
+    return await getSettings(kvs);
+  } catch {
+    return { ...DEFAULT_SETTINGS };
+  }
 }
 
 // Summarized project block for the table: only what the page renders, so a
@@ -116,6 +131,7 @@ resolver.define('getUnblockPlan', async (req) => {
     return {
       ...plan,
       tracking,
+      settings: await readSettings(),
       draft: plan.draft ? { text: plan.draft.text } : null,
     };
   } catch (err) {
@@ -173,14 +189,17 @@ resolver.define('sendRequest', async (req) => {
     const { id: commentId } = await jira.postComment(blocker.key, draft.adf);
 
     // Tracking failure must not fail the call — the comment is already live.
+    // The SLA comes from the admin settings (48h default).
     let tracking = null;
     const notes = [];
     try {
+      const settings = await readSettings();
       tracking = await trackRequest(kvs, {
         issueKey: plan.issue.key,
         blockerKey: blocker.key,
         unblockerAccountId,
         unblockerName,
+        slaHours: settings.slaHours,
       });
     } catch {
       notes.push(
@@ -215,6 +234,7 @@ resolver.define('getProjectBlocks', async (req) => {
       blockedCount: result.blockedCount,
       notes: result.notes,
       generatedAt: result.generatedAt,
+      settings: await readSettings(),
       blocks: result.blocks.map(summarizeProjectBlock),
     };
   } catch (err) {
@@ -238,5 +258,29 @@ resolver.define('getTracking', async (req) => {
     return { error: `Could not load tracking status: ${errorText(err)}` };
   }
 });
+
+// ---------------------------------------------------------------------------
+// getSettings / saveSettings — admin settings for the Configure page
+// (jira:adminPage, useAsConfig). Values are normalized server-side, so the
+// page can never persist an invalid SLA or threshold.
+// ---------------------------------------------------------------------------
+
+resolver.define('getSettings', async () => {
+  try {
+    return { settings: await getSettings(kvs) };
+  } catch (err) {
+    return { error: `Could not load settings: ${errorText(err)}` };
+  }
+});
+
+resolver.define('saveSettings', async (req) => {
+  try {
+    const settings = await saveSettings(kvs, req?.payload?.settings ?? {});
+    return { settings };
+  } catch (err) {
+    return { error: `Could not save settings: ${errorText(err)}` };
+  }
+});
+
 
 export const handler = resolver.getDefinitions();

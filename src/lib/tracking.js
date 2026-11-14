@@ -19,15 +19,23 @@ async function readIndex(storage) {
 
 export async function trackRequest(
   storage,
-  { issueKey, blockerKey, unblockerAccountId, unblockerName, requestedAt = null },
+  {
+    issueKey,
+    blockerKey,
+    unblockerAccountId,
+    unblockerName,
+    requestedAt = null,
+    slaHours = SLA_HOURS,
+  },
 ) {
+  const hours = Number.isFinite(Number(slaHours)) && Number(slaHours) > 0 ? Number(slaHours) : SLA_HOURS;
   const record = {
     issueKey,
     blockerKey,
     unblockerAccountId,
     unblockerName,
     requestedAt: requestedAt ?? new Date().toISOString(),
-    slaHours: SLA_HOURS,
+    slaHours: hours,
     escalatedAt: null,
     status: 'waiting',
   };

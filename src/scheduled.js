@@ -19,6 +19,7 @@
 import { kvs } from '@forge/kvs';
 import { buildEscalationDraft } from './lib/draft.js';
 import { asAppJira } from './lib/forge-clients.js';
+import { DEFAULT_SETTINGS, getSettings } from './lib/settings.js';
 import { clearTracked, listTracked, markEscalated, SLA_HOURS } from './lib/tracking.js';
 
 const MS_PER_HOUR = 60 * 60 * 1000;
@@ -61,7 +62,9 @@ function clearedCommentAdf(record, { blockerDone, waitingDone, blockerGone }) {
 // Process one tracking record. Returns 'cleared' | 'escalated' | 'skipped'.
 // Throws only for unexpected failures (counted by the caller); a 404 on
 // either issue means the issue was deleted, which counts as cleared.
-async function processRecord(jira, record, now) {
+// When followUpEnabled is false, overdue records are skipped (never
+// escalated) but resolved blocks are still cleared.
+async function processRecord(jira, record, now, { followUpEnabled = true } = {}) {
   const { issueKey, blockerKey } = record;
 
   let blocker = null;
@@ -114,7 +117,7 @@ async function processRecord(jira, record, now) {
   const requestedAtMs = Date.parse(record.requestedAt);
   const deadlineMs = requestedAtMs + slaHours * MS_PER_HOUR;
   const pastSla = Number.isFinite(deadlineMs) && now.getTime() > deadlineMs;
-  if (pastSla && !record.escalatedAt) {
+  if (pastSla && !record.escalatedAt && followUpEnabled) {
     const daysWaiting = Math.max(
       1,
       Math.floor((now.getTime() - requestedAtMs) / MS_PER_DAY),
@@ -162,10 +165,18 @@ export async function run(event) {
 
   const jira = asAppJira();
   const now = new Date();
+  // Follow-up can be disabled by the admin; a failed settings read fails
+  // open (follow-up stays on) so a storage hiccup never silently stops it.
+  let followUpEnabled = DEFAULT_SETTINGS.followUpEnabled;
+  try {
+    followUpEnabled = (await getSettings(kvs)).followUpEnabled;
+  } catch {
+    // Keep the default.
+  }
   for (const record of records) {
     summary.checked += 1;
     try {
-      const outcome = await processRecord(jira, record, now);
+      const outcome = await processRecord(jira, record, now, { followUpEnabled });
       if (outcome === 'cleared') summary.cleared += 1;
       else if (outcome === 'escalated') summary.escalated += 1;
     } catch {
