@@ -92,9 +92,9 @@ For every blocked issue, Unjam:
                     └─────────────────────────────────┘
 ```
 
-One engine, five surfaces: the issue panel, the project page, the admin
-settings page, the Rovo agent, and the MCP tools all run the same
-`buildUnblockPlan` / `buildProjectBlocks` logic. The Rovo skill is the
+One engine, six surfaces: the issue panel, the project page, the admin
+settings page, the Rovo agent, the MCP tools, and the daily watch all run the
+same `buildUnblockPlan` / `buildProjectBlocks` logic. The Rovo skill is the
 playbook that tells the agent how to sequence the actions; the daily watch is
 the only piece that runs without a user present (as the app, so it uses Jira
 REST only — Teamwork Graph is user-scoped).
@@ -337,6 +337,8 @@ unjam/
 ```
 
 ## Testing
+
+91 Jest tests pass (8 suites).
 
 ```bash
 npm test            # Jest: pure logic (scoring, chain, draft, candidates,
